@@ -50,6 +50,7 @@ const recycleDrawnChips = ref<Chip[]>([])
 const showRecycleSelect = ref(false)
 const skillInteractionActive = ref(false)
 const skillBoardSelectedCell = ref<CellCoord | null>(null)
+const mobileTab = ref<'board' | 'players' | 'market'>('board')
 
 // ---- Computed ----
 const currentPlayer = computed(() => gameStore.players[gameStore.currentPlayerIndex])
@@ -644,14 +645,14 @@ function handleRemoveVirus() {
     <!-- Top Bar -->
     <div class="top-bar">
       <div class="top-left">
-        <span class="round-badge">{{ t('game.round', { n: gameStore.roundNumber }) }}</span>
+        <span class="round-badge">R{{ gameStore.roundNumber }}</span>
         <span v-if="isFinalRound" class="final-round-badge animate-neon-pulse">
-          ⚠️ {{ t('game.finalRound') }}
+          ⚠️
         </span>
       </div>
       <div class="top-center">
         <span class="turn-label" v-if="currentPlayer">
-          {{ t('game.currentTurn', { name: currentPlayer.name }) }}
+          {{ currentPlayer.name }}
         </span>
         <span class="phase-label">
           {{ t(`game.phase.${turnStore.currentPhase === TurnPhase.SKILL_PHASE ? 'skill' :
@@ -660,16 +661,30 @@ function handleRemoveVirus() {
       </div>
       <div class="top-right">
         <span class="bag-info">
-          {{ t('game.chipBag') }}: {{ chipBagRemaining }} {{ t('game.remaining') }}
+          <span class="bag-info-desktop">{{ t('game.chipBag') }}: {{ chipBagRemaining }} {{ t('game.remaining') }}</span>
+          <span class="bag-info-mobile">🎒{{ chipBagRemaining }}</span>
         </span>
         <LanguageToggle />
       </div>
     </div>
 
+    <!-- Mobile Tab Bar -->
+    <div class="mobile-tabs">
+      <button class="mobile-tab" :class="{ active: mobileTab === 'board' }" @click="mobileTab = 'board'">
+        🎮 {{ t('game.board') || 'Board' }}
+      </button>
+      <button class="mobile-tab" :class="{ active: mobileTab === 'players' }" @click="mobileTab = 'players'">
+        👥 {{ t('game.players') || 'Players' }}
+      </button>
+      <button class="mobile-tab" :class="{ active: mobileTab === 'market' }" @click="mobileTab = 'market'">
+        🛒 {{ t('market.title') }}
+      </button>
+    </div>
+
     <!-- Main Layout -->
     <div class="main-layout">
-      <!-- Left: Player List -->
-      <div class="left-sidebar">
+      <!-- Left: Player List (desktop only, mobile via tab) -->
+      <div class="left-sidebar" :class="{ 'mobile-visible': mobileTab === 'players' }">
         <PlayerHUD
           v-for="(player, index) in gameStore.players"
           :key="player.id"
@@ -679,7 +694,7 @@ function handleRemoveVirus() {
       </div>
 
       <!-- Center: Board -->
-      <div class="center-board">
+      <div class="center-board" :class="{ 'mobile-visible': mobileTab === 'board' }">
         <GameBoard
           :cells="boardStore.cells"
           :highlighted-cells="highlightedCells"
@@ -688,8 +703,8 @@ function handleRemoveVirus() {
         />
       </div>
 
-      <!-- Right: Market -->
-      <div class="right-sidebar">
+      <!-- Right: Market (desktop only, mobile via tab) -->
+      <div class="right-sidebar" :class="{ 'mobile-visible': mobileTab === 'market' }">
         <MarketPanel
           :face-up-slots="marketStore.faceUpSlots"
           :blind-slot="marketStore.blindSlot"
@@ -705,6 +720,17 @@ function handleRemoveVirus() {
 
     <!-- Bottom Bar: Current Player Controls -->
     <div class="bottom-bar" v-if="currentPlayer">
+      <!-- Mobile: Current player quick info -->
+      <div class="mobile-player-info">
+        <CurrencyDisplay :amount="currentPlayer.money" size="sm" />
+        <div class="slots-progress-mobile">
+          {{ currentPlayer.completedSlots }}/{{ currentPlayer.totalSlots }} ✓
+        </div>
+        <div class="hand-count-mobile">
+          ✋{{ currentPlayer.hand.length }}
+        </div>
+      </div>
+
       <div class="bottom-left">
         <PlayerHand
           :chips="currentPlayer.hand"
@@ -865,6 +891,20 @@ function handleRemoveVirus() {
 .bag-info {
   font-size: 0.7rem;
   color: var(--text-secondary);
+}
+
+.bag-info-mobile {
+  display: none;
+}
+
+/* ---- Mobile Tab Bar ---- */
+.mobile-tabs {
+  display: none;
+}
+
+/* ---- Mobile Player Info ---- */
+.mobile-player-info {
+  display: none;
 }
 
 /* ---- Main Layout ---- */
@@ -1046,5 +1086,195 @@ function handleRemoveVirus() {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* ---- Top Bar Mobile ---- */
+  .top-bar {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .top-left, .top-right {
+    gap: 6px;
+  }
+
+  .round-badge {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+  }
+
+  .turn-label {
+    font-size: 0.85rem;
+  }
+
+  .phase-label {
+    font-size: 0.6rem;
+  }
+
+  .bag-info-desktop {
+    display: none;
+  }
+
+  .bag-info-mobile {
+    display: inline;
+    font-size: 0.7rem;
+  }
+
+  /* ---- Mobile Tab Bar ---- */
+  .mobile-tabs {
+    display: flex;
+    flex-shrink: 0;
+    background: var(--bg-surface);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+  }
+
+  .mobile-tab {
+    flex: 1;
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+    text-align: center;
+  }
+
+  .mobile-tab.active {
+    color: var(--neon-cyan);
+    border-bottom-color: var(--neon-cyan);
+    background: rgba(0, 229, 255, 0.05);
+  }
+
+  /* ---- Main Layout Mobile ---- */
+  .main-layout {
+    flex: 1;
+    min-height: 0;
+    padding: 4px;
+    gap: 0;
+    position: relative;
+  }
+
+  .left-sidebar,
+  .center-board,
+  .right-sidebar {
+    display: none;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .left-sidebar.mobile-visible,
+  .center-board.mobile-visible,
+  .right-sidebar.mobile-visible {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .left-sidebar.mobile-visible {
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  .center-board.mobile-visible {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .right-sidebar.mobile-visible {
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  /* ---- Mobile Player Info ---- */
+  .mobile-player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px;
+    background: rgba(0, 229, 255, 0.03);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 4px;
+  }
+
+  .slots-progress-mobile {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    color: var(--neon-green);
+    letter-spacing: 1px;
+  }
+
+  .hand-count-mobile {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+  }
+
+  /* ---- Bottom Bar Mobile ---- */
+  .bottom-bar {
+    flex-direction: column;
+    max-height: none;
+    padding: 6px 8px;
+    gap: 6px;
+    overflow-y: auto;
+    max-height: 45%;
+  }
+
+  .bottom-left {
+    width: 100%;
+  }
+
+  .bottom-center {
+    width: 100%;
+    flex: none;
+  }
+
+  .bottom-right {
+    display: none;
+  }
+
+  .action-message {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+
+  .slots-progress {
+    display: none;
+  }
+
+  /* ---- End Turn Popup Mobile ---- */
+  .end-turn-popup {
+    padding: var(--space-md);
+    margin: 0 16px;
+  }
+
+  .end-turn-message {
+    font-size: 0.85rem;
+  }
+
+  /* ---- Recycle Modal Mobile ---- */
+  .recycle-modal {
+    padding: var(--space-md);
+    margin: 0 16px;
+    max-width: 90vw;
+  }
+
+  .modal-title {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .recycle-chips {
+    gap: var(--space-md);
+  }
 }
 </style>

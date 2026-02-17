@@ -325,4 +325,54 @@ function autoRandomDraft() {
   font-family: var(--font-display);
   font-size: 0.7rem;
 }
+
+@media (max-width: 768px) {
+  .draft-view {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .draft-header {
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: flex-start;
+  }
+
+  .draft-info {
+    gap: var(--space-sm);
+  }
+
+  .draft-title {
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+
+  .draft-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .draft-status {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .draft-player {
+    font-size: 0.9rem;
+  }
+
+  .draft-meta {
+    font-size: 0.7rem;
+    gap: var(--space-sm);
+  }
+
+  .draft-players {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .draft-player-tag {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+}
 </style>

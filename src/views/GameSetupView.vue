@@ -480,4 +480,40 @@ function goBack() {
   gap: var(--space-md);
   padding: var(--space-lg) 0;
 }
+
+@media (max-width: 768px) {
+  .setup-view {
+    padding: var(--space-md);
+  }
+
+  .setup-title {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+
+  .setup-players {
+    grid-template-columns: 1fr;
+  }
+
+  .character-options {
+    gap: 4px;
+  }
+
+  .character-btn {
+    padding: 4px 8px;
+  }
+
+  .char-name {
+    font-size: 0.7rem;
+  }
+
+  .char-title {
+    font-size: 0.55rem;
+  }
+
+  .setup-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}
 </style>

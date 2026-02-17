@@ -107,14 +107,27 @@ body {
   background: var(--bg-deepest);
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 #app {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   position: relative;
+}
+
+/* ---- Mobile spacing overrides ---- */
+@media (max-width: 768px) {
+  :root {
+    --space-md: 10px;
+    --space-lg: 16px;
+    --space-xl: 20px;
+    --grid-gap: 1px;
+  }
 }
 
 /* ---- Scrollbar ---- */

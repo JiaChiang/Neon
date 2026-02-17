@@ -125,4 +125,41 @@ const playerColor = computed(() => PLAYER_COLORS_CSS[props.player.color])
   text-shadow: 0 0 4px var(--neon-pink);
   letter-spacing: 1px;
 }
+
+@media (max-width: 768px) {
+  .player-hud {
+    padding: 8px 10px;
+  }
+
+  .hud-header {
+    margin-bottom: 4px;
+    gap: 6px;
+  }
+
+  .hud-name {
+    font-size: 0.85rem;
+  }
+
+  .hud-character {
+    font-size: 0.6rem;
+  }
+
+  .hud-stats {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .stat-label {
+    font-size: 0.6rem;
+  }
+
+  .stat-value {
+    font-size: 0.7rem;
+  }
+
+  .hud-color-dot {
+    width: 8px;
+    height: 8px;
+  }
+}
 </style>

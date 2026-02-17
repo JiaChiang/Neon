@@ -132,4 +132,26 @@ const chipLabel = computed(() => {
 .chip-label {
   user-select: none;
 }
+
+@media (max-width: 768px) {
+  .chip--sm {
+    width: 20px;
+    height: 20px;
+    font-size: 0.5rem;
+    border-width: 1px;
+  }
+
+  .chip--md {
+    width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
+    border-width: 1.5px;
+  }
+
+  .chip--lg {
+    width: 40px;
+    height: 40px;
+    font-size: 0.85rem;
+  }
+}
 </style>

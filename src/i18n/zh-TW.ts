@@ -62,6 +62,8 @@ export default {
     slots: '格',
     chipBag: '晶片袋',
     remaining: '剩餘',
+    board: '版圖',
+    players: '玩家',
   },
   // ---- Actions ----
   action: {

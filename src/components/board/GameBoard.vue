@@ -69,4 +69,16 @@ function isValidDraft(row: number, col: number): boolean {
   border-radius: var(--border-radius-md);
   padding: var(--grid-gap);
 }
+
+@media (max-width: 768px) {
+  .game-board {
+    padding: 2px;
+  }
+
+  .board-grid {
+    width: 100%;
+    max-width: calc(100vw - 16px);
+    max-height: 100%;
+  }
+}
 </style>

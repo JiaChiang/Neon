@@ -377,4 +377,47 @@ const skillButtonLabel = computed(() => {
 .modal-fade-leave-to {
   opacity: 0;
 }
+
+@media (max-width: 768px) {
+  .action-panel {
+    gap: var(--space-sm);
+  }
+
+  .phase-title {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+  }
+
+  .action-buttons {
+    gap: 4px;
+  }
+
+  .action-descriptions {
+    display: none;
+  }
+
+  .virus-removal {
+    padding-top: 4px;
+  }
+
+  .virus-desc {
+    display: none;
+  }
+
+  .char-modal {
+    min-width: unset;
+    max-width: 90vw;
+    padding: var(--space-md);
+    margin: 0 16px;
+  }
+
+  .char-modal-name {
+    font-size: 1rem;
+  }
+
+  .char-skill-desc {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+}
 </style>

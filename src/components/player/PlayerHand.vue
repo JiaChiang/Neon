@@ -99,4 +99,31 @@ function handleSelect(index: number) {
   font-style: italic;
   opacity: 0.5;
 }
+
+@media (max-width: 768px) {
+  .player-hand {
+    gap: 4px;
+  }
+
+  .hand-label {
+    font-size: 0.65rem;
+  }
+
+  .hand-chips {
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hand-chip-wrapper {
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
+  .chip-type-label {
+    font-size: 0.5rem;
+  }
+}
 </style>

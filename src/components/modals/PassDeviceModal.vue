@@ -88,4 +88,15 @@ const { t } = useI18n()
 .modal-fade-leave-to {
   opacity: 0;
 }
+
+@media (max-width: 768px) {
+  .pass-player-name {
+    font-size: 2rem;
+    letter-spacing: 3px;
+  }
+
+  .pass-text {
+    font-size: 1rem;
+  }
+}
 </style>

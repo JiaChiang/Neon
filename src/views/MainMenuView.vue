@@ -201,4 +201,39 @@ function startNewGame() {
   right: 10%;
   background: linear-gradient(to bottom, transparent, rgba(191, 90, 242, 0.2), transparent);
 }
+
+@media (max-width: 768px) {
+  .menu-title {
+    font-size: 2.2rem;
+    letter-spacing: 4px;
+  }
+
+  .menu-subtitle {
+    font-size: 1rem;
+    letter-spacing: 6px;
+  }
+
+  .menu-tagline {
+    font-size: 0.8rem;
+  }
+
+  .menu-info {
+    gap: var(--space-sm);
+  }
+
+  .info-badge {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+
+  .menu-deco-left,
+  .menu-deco-right {
+    display: none;
+  }
+
+  .menu-content {
+    gap: var(--space-lg);
+    padding: 0 var(--space-md);
+  }
+}
 </style>

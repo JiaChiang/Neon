@@ -217,4 +217,36 @@ function canAfford(basePrice: number) {
 .discard-stack {
   font-size: 1.2rem;
 }
+
+@media (max-width: 768px) {
+  .market-panel {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .market-title {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+  }
+
+  .market-slots {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .market-slot {
+    min-width: 56px;
+    padding: 6px;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .slot-price {
+    font-size: 0.7rem;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+  }
+}
 </style>

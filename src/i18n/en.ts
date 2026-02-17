@@ -62,6 +62,8 @@ export default {
     slots: 'slots',
     chipBag: 'Chip Bag',
     remaining: 'remaining',
+    board: 'Board',
+    players: 'Players',
   },
   // ---- Actions ----
   action: {

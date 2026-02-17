@@ -132,4 +132,30 @@ defineEmits<{
   cursor: not-allowed;
   filter: grayscale(0.5);
 }
+
+@media (max-width: 768px) {
+  .neon-button {
+    letter-spacing: 0.5px;
+    gap: 4px;
+  }
+
+  .neon-button--sm {
+    padding: 4px 10px;
+    font-size: 0.6rem;
+  }
+
+  .neon-button--md {
+    padding: 6px 14px;
+    font-size: 0.7rem;
+  }
+
+  .neon-button--lg {
+    padding: 10px 24px;
+    font-size: 0.85rem;
+  }
+
+  .neon-button__content {
+    gap: 4px;
+  }
+}
 </style>
