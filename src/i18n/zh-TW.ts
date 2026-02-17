@@ -137,6 +137,14 @@ export default {
       awakenDesc: '重新整理市場（明牌區晶片全部棄掉，補充新的），並免費拿取 1 片',
     },
   },
+  // ---- Skill Interaction ----
+  skill: {
+    selectBoardChip: '選擇版圖上你的一片晶片',
+    selectTargetCell: '選擇相鄰的空格移動晶片',
+    selectSecondChip: '選擇第二片晶片進行交換',
+    chipMoved: '晶片已移動！',
+    chipSwapped: '晶片已交換！',
+  },
   // ---- Mine Cards ----
   mine: {
     blank: { name: '空白代碼', desc: '無事發生，安全通過' },

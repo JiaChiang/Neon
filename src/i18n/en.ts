@@ -137,6 +137,14 @@ export default {
       awakenDesc: 'Refresh market (discard all face-up chips, draw new ones) and take 1 for free',
     },
   },
+  // ---- Skill Interaction ----
+  skill: {
+    selectBoardChip: 'Select one of your chips on the board',
+    selectTargetCell: 'Select an adjacent empty slot to move the chip',
+    selectSecondChip: 'Select the second chip to swap',
+    chipMoved: 'Chip moved!',
+    chipSwapped: 'Chips swapped!',
+  },
   // ---- Mine Cards ----
   mine: {
     blank: { name: 'Blank Code', desc: 'Nothing happens. Safe passage.' },

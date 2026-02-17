@@ -8,6 +8,7 @@ import {
 } from '../types/enums'
 import type { Chip, CellCoord, MineCard, BoardCell } from '../types/game'
 import { DEFAULT_GAME_CONFIG, MARKET_FACE_UP_PRICES, MARKET_BLIND_PRICE, MARKET_DISCARD_PRICE } from '../constants/gameConfig'
+import { getAdjacentCoords, isAdjacent } from '../utils/adjacency'
 import { useGameStore } from '../stores/gameStore'
 import { useBoardStore } from '../stores/boardStore'
 import { useMarketStore } from '../stores/marketStore'
@@ -47,6 +48,8 @@ const selectedHandChip = ref<number | null>(null)
 const actionMessage = ref('')
 const recycleDrawnChips = ref<Chip[]>([])
 const showRecycleSelect = ref(false)
+const skillInteractionActive = ref(false)
+const skillBoardSelectedCell = ref<CellCoord | null>(null)
 
 // ---- Computed ----
 const currentPlayer = computed(() => gameStore.players[gameStore.currentPlayerIndex])
@@ -142,6 +145,8 @@ onMounted(() => {
 
 function startNewTurn() {
   turnStore.startTurn()
+  skillInteractionActive.value = false
+  skillBoardSelectedCell.value = null
   // Clear status effects that lasted 1 turn
   if (currentPlayer.value) {
     currentPlayer.value.statusEffects = currentPlayer.value.statusEffects.filter(
@@ -180,10 +185,22 @@ function handleUseSkill() {
     createSkillContext()
   )
 
-  if (result.requiresInteraction && result.chipsDrawn) {
-    // Recycler: show draw selection
-    recycleDrawnChips.value = result.chipsDrawn
-    showRecycleSelect.value = true
+  if (result.requiresInteraction) {
+    if (result.chipsDrawn) {
+      // Recycler: show draw selection
+      recycleDrawnChips.value = result.chipsDrawn
+      showRecycleSelect.value = true
+    } else if (result.interactionType) {
+      // Construction Baron (or any skill needing board interaction)
+      turnStore.setSubAction(result.interactionType)
+      actionMessage.value = result.description
+      skillInteractionActive.value = true
+
+      // Highlight eligible cells for SELECT_BOARD_CHIP
+      if (result.interactionType === SubActionState.SELECT_BOARD_CHIP && currentPlayer.value) {
+        highlightSkillBoardChips()
+      }
+    }
   } else {
     actionMessage.value = result.description
     turnStore.enterMainAction()
@@ -207,6 +224,112 @@ function handleRecycleSkillSelect(index: number) {
 
 function handleSkipSkill() {
   turnStore.enterMainAction()
+}
+
+// ---- Skill Board Interaction (Construction Baron) ----
+
+/** Highlight all of the current player's chips on the board (for SELECT_BOARD_CHIP) */
+function highlightSkillBoardChips() {
+  if (!currentPlayer.value) return
+  const pid = currentPlayer.value.id
+  const cells: CellCoord[] = []
+  for (const row of boardStore.cells) {
+    for (const cell of row) {
+      if (cell.chip && cell.chipPlacer === pid) {
+        cells.push({ row: cell.row, col: cell.col })
+      }
+    }
+  }
+  uiStore.setHighlightedCells(cells)
+}
+
+/** Handle board clicks during skill interaction */
+function handleSkillBoardClick(row: number, col: number) {
+  if (!currentPlayer.value) return
+  const player = currentPlayer.value
+
+  if (turnStore.subActionState === SubActionState.SELECT_BOARD_CHIP) {
+    // Step 1: Select one of your chips on the board
+    const cell = boardStore.getCell(row, col)
+    if (!cell || !cell.chip || cell.chipPlacer !== player.id) return
+
+    // For awakened swap: track first selected chip
+    if (currentPlayer.value.isAwakened && currentPlayer.value.character.id === CharacterId.CONSTRUCTION_BARON) {
+      // Awakened: swap 2 chips – no virus allowed
+      if (cell.chip.type === ChipType.VIRUS) return
+      skillBoardSelectedCell.value = { row, col }
+      // Highlight all other own non-virus chips (for second selection)
+      const swapTargets: CellCoord[] = []
+      for (const r of boardStore.cells) {
+        for (const c of r) {
+          if (c.chip && c.chipPlacer === player.id && c.chip.type !== ChipType.VIRUS &&
+            !(c.row === row && c.col === col)) {
+            swapTargets.push({ row: c.row, col: c.col })
+          }
+        }
+      }
+      uiStore.setHighlightedCells(swapTargets)
+      turnStore.setSubAction(SubActionState.SELECT_BOARD_CELL)
+      actionMessage.value = t('skill.selectSecondChip')
+      return
+    }
+
+    // Basic: move to adjacent empty slot
+    skillBoardSelectedCell.value = { row, col }
+    // Highlight adjacent empty cells (any player's empty slot)
+    const adjacent = getAdjacentCoords(row, col, DEFAULT_GAME_CONFIG.boardRows, DEFAULT_GAME_CONFIG.boardCols)
+    const emptyAdjacent = adjacent.filter((c) => {
+      const adj = boardStore.getCell(c.row, c.col)
+      return adj && adj.slotOwner && adj.chip === null
+    })
+    uiStore.setHighlightedCells(emptyAdjacent)
+    turnStore.setSubAction(SubActionState.SELECT_BOARD_CELL)
+    actionMessage.value = t('skill.selectTargetCell')
+
+  } else if (turnStore.subActionState === SubActionState.SELECT_BOARD_CELL) {
+    if (!skillBoardSelectedCell.value) return
+
+    const isValid = highlightedCells.value.some((c) => c.row === row && c.col === col)
+    if (!isValid) return
+
+    const isAwakened = player.isAwakened && player.character.id === CharacterId.CONSTRUCTION_BARON
+
+    if (isAwakened) {
+      // Awakened: swap two chip positions
+      const srcCell = boardStore.getCell(skillBoardSelectedCell.value.row, skillBoardSelectedCell.value.col)
+      const dstCell = boardStore.getCell(row, col)
+      if (!srcCell || !dstCell || !srcCell.chip || !dstCell.chip) return
+
+      const tempChip = srcCell.chip
+      const tempPlacer = srcCell.chipPlacer
+      srcCell.chip = dstCell.chip
+      srcCell.chipPlacer = dstCell.chipPlacer
+      dstCell.chip = tempChip
+      dstCell.chipPlacer = tempPlacer
+
+      actionMessage.value = t('skill.chipSwapped')
+    } else {
+      // Basic: move chip from source to target
+      const sourceCell = skillBoardSelectedCell.value
+      const chip = boardStore.removeChip(sourceCell.row, sourceCell.col)
+      if (!chip) return
+
+      const targetCell = boardStore.getCell(row, col)
+      if (targetCell) {
+        targetCell.chip = chip
+        targetCell.chipPlacer = player.id
+      }
+
+      actionMessage.value = t('skill.chipMoved')
+    }
+
+    // Clean up skill interaction
+    skillBoardSelectedCell.value = null
+    skillInteractionActive.value = false
+    turnStore.setSubAction(null)
+    uiStore.setHighlightedCells([])
+    turnStore.enterMainAction()
+  }
 }
 
 // ---- Main Action ----
@@ -242,6 +365,12 @@ function handleHandChipSelect(index: number) {
 
 // ---- Chip Install ----
 function handleBoardCellClick(row: number, col: number) {
+  // Route to skill interaction if active
+  if (skillInteractionActive.value) {
+    handleSkillBoardClick(row, col)
+    return
+  }
+
   if (turnStore.mainActionChosen !== ActionType.CHIP_INSTALL) return
   if (turnStore.currentPhase !== TurnPhase.MAIN_ACTION) return
   if (selectedHandChip.value === null) return
