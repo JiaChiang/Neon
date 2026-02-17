@@ -243,6 +243,7 @@ function handleHandChipSelect(index: number) {
 // ---- Chip Install ----
 function handleBoardCellClick(row: number, col: number) {
   if (turnStore.mainActionChosen !== ActionType.CHIP_INSTALL) return
+  if (turnStore.currentPhase !== TurnPhase.MAIN_ACTION) return
   if (selectedHandChip.value === null) return
   if (!currentPlayer.value) return
 
@@ -311,8 +312,15 @@ function handleBoardCellClick(row: number, col: number) {
     // Execute mine effect
     if (mine.timing === MineEffectTiming.IMMEDIATE) {
       const result = executeMineEffect(mine.type, player.id, row, col, createMineContext())
+      // Add drawn chips to player's hand (DATA_MINING, UNIVERSAL_PORT)
+      if (result.chipsDrawn && result.chipsDrawn.length > 0) {
+        player.hand.push(...result.chipsDrawn)
+      }
       if (result.extraTurn) {
         turnStore.addExtraTurn()
+      }
+      if (result.description) {
+        actionMessage.value = result.description
       }
     } else if (mine.timing === MineEffectTiming.DELAYED) {
       turnStore.queueDelayedEffect(mine)
@@ -572,7 +580,7 @@ function handleRemoveVirus() {
         <PlayerHand
           :chips="currentPlayer.hand"
           :selected-index="selectedHandChip"
-          :selectable="turnStore.mainActionChosen === ActionType.CHIP_INSTALL ||
+          :selectable="(turnStore.mainActionChosen === ActionType.CHIP_INSTALL && turnStore.currentPhase === TurnPhase.MAIN_ACTION) ||
             turnStore.subActionState === SubActionState.SELECT_DISCARD"
           @select="turnStore.subActionState === SubActionState.SELECT_DISCARD
             ? handleRecycleDiscard($event)
@@ -606,6 +614,23 @@ function handleRemoveVirus() {
         </div>
       </div>
     </div>
+
+    <!-- End Turn Overlay -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div
+          v-if="turnStore.currentPhase === TurnPhase.END_RESOLUTION && !showMineModal && !showRecycleSelect"
+          class="end-turn-overlay"
+        >
+          <div class="end-turn-popup">
+            <div class="end-turn-message">{{ actionMessage || t('action.turnComplete') }}</div>
+            <NeonButton size="lg" @click="handleEndTurn">
+              {{ t('action.endTurn') }} →
+            </NeonButton>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Recycle Select Modal -->
     <Teleport to="body">
@@ -850,5 +875,47 @@ function handleRemoveVirus() {
   font-size: 0.7rem;
   color: var(--text-secondary);
   text-transform: uppercase;
+}
+
+/* ---- End Turn Overlay ---- */
+.end-turn-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-backdrop);
+  backdrop-filter: blur(2px);
+}
+
+.end-turn-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl) calc(var(--space-xl) * 2);
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: var(--border-radius-xl);
+  animation: scale-pop 0.3s ease;
+}
+
+.end-turn-message {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 300px;
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
 }
 </style>

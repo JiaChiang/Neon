@@ -77,6 +77,7 @@ export default {
     skillFree: '免費',
     skipSkill: '跳過技能',
     endTurn: '結束回合',
+    turnComplete: '行動完成',
     removeVirus: '移除病毒',
     removeVirusDesc: '棄掉 2 片數據晶片移除 1 片病毒',
     cancel: '取消',

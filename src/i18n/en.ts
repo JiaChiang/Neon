@@ -77,6 +77,7 @@ export default {
     skillFree: 'Free',
     skipSkill: 'Skip Skill',
     endTurn: 'End Turn',
+    turnComplete: 'Action Complete',
     removeVirus: 'Remove Virus',
     removeVirusDesc: 'Discard 2 data chips to remove 1 virus',
     cancel: 'Cancel',
