@@ -160,7 +160,7 @@ function autoRandomDraft() {
           </span>
         </div>
         <div class="draft-meta">
-          <span>{{ t('draft.round', { n: currentRound + 1 }) }}</span>
+          <span>{{ t('draft.round', { n: currentRound }) }}</span>
           <span>{{ t('draft.slotsRemaining', { n: slotsRemaining }) }}</span>
         </div>
         <NeonButton variant="secondary" size="sm" @click="autoRandomDraft">

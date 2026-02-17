@@ -30,6 +30,7 @@ const showCharacterInfo = ref(false)
 
 const isSkillPhase = computed(() => props.currentPhase === TurnPhase.SKILL_PHASE)
 const isMainAction = computed(() => props.currentPhase === TurnPhase.MAIN_ACTION)
+const isEndResolution = computed(() => props.currentPhase === TurnPhase.END_RESOLUTION)
 
 const isMarketFrozen = computed(() =>
   props.player.statusEffects.includes(StatusEffect.ASSET_FREEZE)
@@ -131,7 +132,7 @@ const skillButtonLabel = computed(() => {
     </div>
 
     <!-- End Turn -->
-    <div v-if="isMainAction && mainActionChosen" class="end-section">
+    <div v-if="(isMainAction && mainActionChosen) || isEndResolution" class="end-section">
       <NeonButton variant="ghost" @click="emit('end-turn')">
         {{ t('action.endTurn') }} →
       </NeonButton>

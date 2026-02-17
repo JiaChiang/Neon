@@ -321,6 +321,9 @@ function handleBoardCellClick(row: number, col: number) {
     // Blank mine - brief flash
     revealedMineType.value = MineCardType.BLANK
     showMineModal.value = true
+  } else {
+    // No mine card on this cell – finish action immediately
+    finishMainAction()
   }
 }
 
@@ -345,12 +348,16 @@ function handleRecycleDiscard(index: number) {
   const drawn = gameStore.drawChips(2)
   recycleDrawnChips.value = drawn
 
-  if (drawn.length > 0) {
-    showRecycleSelect.value = true
-  }
-
   // Gain $2
   gameStore.addMoney(player.id, 2)
+
+  if (drawn.length > 0) {
+    showRecycleSelect.value = true
+  } else {
+    // No chips to draw – finish action immediately
+    turnStore.setSubAction(null)
+    finishMainAction()
+  }
 }
 
 function handleRecycleKeep(index: number) {
@@ -551,7 +558,7 @@ function handleRemoveVirus() {
           :blind-slot="marketStore.blindSlot"
           :discard-pile-count="gameStore.discardPile.length"
           :player-money="currentPlayer?.money || 0"
-          :is-active="turnStore.mainActionChosen === ActionType.MARKET_PURCHASE"
+          :is-active="turnStore.mainActionChosen === ActionType.MARKET_PURCHASE && turnStore.currentPhase === TurnPhase.MAIN_ACTION"
           :market-discount="turnStore.marketDiscount"
           @buy-face-up="handleBuyFaceUp"
           @buy-blind="handleBuyBlind"
