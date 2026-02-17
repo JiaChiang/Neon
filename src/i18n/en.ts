@@ -1,0 +1,173 @@
+export default {
+  // ---- App ----
+  app: {
+    title: 'NEON CORE',
+    subtitle: 'NEOL BLOCK',
+    tagline: 'Year 2099 — The battle for Neon City\'s core',
+  },
+  // ---- Menu ----
+  menu: {
+    newGame: 'New Game',
+    rules: 'Rules',
+    language: 'Language',
+  },
+  // ---- Setup ----
+  setup: {
+    title: 'Game Setup',
+    playerCount: 'Number of Players',
+    players: 'Players',
+    playerName: 'Player {n}',
+    selectColor: 'Select Color',
+    selectCharacter: 'Select Character',
+    randomCharacter: 'Random Character',
+    startGame: 'Start Game',
+    back: 'Back',
+  },
+  // ---- Colors ----
+  color: {
+    RED: 'Red',
+    ORANGE: 'Orange',
+    YELLOW: 'Yellow',
+    GREEN: 'Green',
+    BLUE: 'Blue',
+    PURPLE: 'Purple',
+  },
+  // ---- Draft ----
+  draft: {
+    title: 'Blueprint Setup',
+    subtitle: 'Snake Draft',
+    instruction: 'Place your card slots on the board',
+    playerTurn: '{name}\'s Turn',
+    slotsRemaining: '{n} slots remaining',
+    round: 'Round {n}',
+    complete: 'Setup Complete!',
+    startPlay: 'Start Game',
+    autoRandom: 'Auto Random',
+  },
+  // ---- Game ----
+  game: {
+    round: 'Round {n}',
+    currentTurn: '{name}\'s Turn',
+    finalRound: 'Final Round!',
+    phase: {
+      skill: 'Skill Phase',
+      mainAction: 'Main Action',
+      endResolution: 'End Resolution',
+    },
+    passDevice: 'Pass device to',
+    tapToContinue: 'Tap to continue',
+    money: 'Money',
+    hand: 'Hand',
+    completed: 'Completed',
+    slots: 'slots',
+    chipBag: 'Chip Bag',
+    remaining: 'remaining',
+  },
+  // ---- Actions ----
+  action: {
+    title: 'Choose Action',
+    chipInstall: 'Chip Install',
+    chipInstallDesc: 'Place 1 chip on the board',
+    chipRecycle: 'Chip Recycle',
+    chipRecycleDesc: 'Discard 1, draw 2, keep 1, gain $2',
+    marketPurchase: 'Market Purchase',
+    marketPurchaseDesc: 'Buy a chip from the market',
+    useSkill: 'Use Skill',
+    skillCost: 'Cost $2',
+    skillFree: 'Free',
+    skipSkill: 'Skip Skill',
+    endTurn: 'End Turn',
+    removeVirus: 'Remove Virus',
+    removeVirusDesc: 'Discard 2 data chips to remove 1 virus',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    viewCharacter: 'View Character',
+    basicSkill: 'Basic Skill',
+    awakenSkill: 'Awakened Skill',
+    awakenCondition: 'Awaken after completing 4 slots to unlock awakened skill',
+  },
+  // ---- Market ----
+  market: {
+    title: 'Market',
+    faceUp: 'Face Up',
+    blind: 'Blind Draw',
+    discardPile: 'Discard Pile',
+    empty: 'Empty',
+    price: '${n}',
+  },
+  // ---- Chips ----
+  chip: {
+    data: 'Data Chip',
+    virus: 'Virus Chip',
+    unknown: 'Unknown Chip',
+  },
+  // ---- Characters ----
+  character: {
+    recycler: {
+      name: 'Recycler',
+      title: 'Waste Reprocessing Master',
+      basicSkill: 'Waste Recycling',
+      basicDesc: 'Draw 3 chips from bag, keep 1, return the rest',
+      awakenSkill: 'Purification Master',
+      awakenDesc: 'Remove virus with only 1 chip (instead of 2), gain $5, slot can be filled immediately',
+    },
+    dataCollector: {
+      name: 'Data Collector',
+      title: 'Perfectionist',
+      basicSkill: 'Progress Reward',
+      basicDesc: 'Passive: Gain $6 for every 4 completed slots',
+      awakenSkill: 'Perfectionism',
+      awakenDesc: 'Your victory trigger changes to 5 completed slots (instead of 6)',
+    },
+    constructionBaron: {
+      name: 'Construction Baron',
+      title: 'Space Reorganization Expert',
+      basicSkill: 'Space Reorganization',
+      basicDesc: 'Move 1 chip on the board to an adjacent empty slot',
+      awakenSkill: 'Urban Renewal',
+      awakenDesc: 'Swap any 2 chips on the board (not adjacent required, cannot be virus)',
+    },
+    financialTycoon: {
+      name: 'Financial Tycoon',
+      title: 'Capital Domination',
+      basicSkill: 'Capital Advantage',
+      basicDesc: 'This turn, market purchase costs are reduced by $3 (min $0)',
+      awakenSkill: 'Market Manipulation',
+      awakenDesc: 'Refresh market (discard all face-up chips, draw new ones) and take 1 for free',
+    },
+  },
+  // ---- Mine Cards ----
+  mine: {
+    blank: { name: 'Blank Code', desc: 'Nothing happens. Safe passage.' },
+    coreOverclock: { name: 'Core Overclock', desc: 'Gain 1 extra turn immediately' },
+    firewallPatch: { name: 'Firewall Patch', desc: 'This slot becomes a safe zone. No virus chips can be placed here.' },
+    dataMining: { name: 'Data Mining', desc: 'Draw 2 chips from bag and gain $5' },
+    universalPort: { name: 'Universal Port', desc: 'Gain 1 data chip to hand' },
+    chainShortCircuit: { name: 'Chain Short Circuit', desc: '2 adjacent chips (up/down/left/right) bounce back to their owners\' hands' },
+    assetFreeze: { name: 'Asset Freeze', desc: 'Triggering player cannot use Market Purchase next turn' },
+    codeShift: { name: 'Code Shift', desc: 'Triggering player may move any 2 chips to adjacent empty slots' },
+    trojanHorse: { name: 'Trojan Horse', desc: 'Triggering player swaps entire hand with the player to their left' },
+    mirrorPath: { name: 'Mirror Path', desc: 'Next round, all players must place chips on opponent slots (lasts 1 round)' },
+    restartCommand: { name: 'Restart Command', desc: 'Start player marker passes to triggering player, and market is refreshed' },
+    emergencyBackup: { name: 'Emergency Backup', desc: 'All players take back 1 of their chips from the board and gain $3' },
+    reveal: 'Mine Card Revealed!',
+    safe: 'Safe Passage!',
+  },
+  // ---- Awakening ----
+  awakening: {
+    title: 'Awakening!',
+    desc: '{name} completed 4 slots — Character Awakened!',
+    newSkill: 'Awakened Skill Unlocked',
+  },
+  // ---- Victory ----
+  victory: {
+    title: 'Game Over',
+    winner: '🏆 {name} Wins!',
+    ranking: 'Rankings',
+    rank: 'Rank {n}',
+    completedSlots: 'Completed Slots',
+    totalMoney: 'Total Money',
+    playAgain: 'Play Again',
+    backToMenu: 'Back to Menu',
+  },
+}

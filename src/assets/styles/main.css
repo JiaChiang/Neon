@@ -1,0 +1,211 @@
+/* ============================================================
+   Neol Block - Main Styles
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  /* ---- Background layers ---- */
+  --bg-deepest: #050508;
+  --bg-dark: #0a0a12;
+  --bg-surface: #11111b;
+  --bg-elevated: #1a1a2e;
+  --bg-hover: #222240;
+
+  /* ---- Neon Player Colors ---- */
+  --neon-red: #ff2d55;
+  --neon-orange: #ff9500;
+  --neon-yellow: #ffcc00;
+  --neon-green: #30d158;
+  --neon-blue: #0a84ff;
+  --neon-purple: #bf5af2;
+
+  /* ---- Neon UI Colors ---- */
+  --neon-cyan: #00e5ff;
+  --neon-pink: #ff4081;
+  --neon-white: #e0f0ff;
+
+  /* ---- Chip Colors ---- */
+  --chip-data: #c8d6e5;
+  --chip-data-glow: rgba(200, 214, 229, 0.5);
+  --chip-virus: #1a1a1a;
+  --chip-virus-glow: rgba(255, 45, 85, 0.6);
+
+  /* ---- Text ---- */
+  --text-primary: #e6edf3;
+  --text-secondary: #7a8599;
+  --text-accent: #00e5ff;
+  --text-warning: #ff9500;
+  --text-danger: #ff2d55;
+  --text-success: #30d158;
+
+  /* ---- Grid ---- */
+  --grid-line: rgba(0, 229, 255, 0.08);
+  --grid-line-hover: rgba(0, 229, 255, 0.25);
+  --grid-gap: 2px;
+
+  /* ---- Glow Intensities ---- */
+  --glow-subtle: 0 0 4px;
+  --glow-medium: 0 0 8px, 0 0 16px;
+  --glow-intense: 0 0 8px, 0 0 16px, 0 0 32px;
+  --glow-extreme: 0 0 10px, 0 0 20px, 0 0 40px, 0 0 80px;
+
+  /* ---- Borders ---- */
+  --border-subtle: 1px solid rgba(0, 229, 255, 0.15);
+  --border-accent: 1px solid rgba(0, 229, 255, 0.4);
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* ---- Spacing ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* ---- Typography ---- */
+  --font-display: 'Orbitron', sans-serif;
+  --font-ui: 'Rajdhani', 'Noto Sans TC', sans-serif;
+  --font-body: 'Noto Sans TC', 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+
+  /* ---- Transitions ---- */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* ---- Z-index layers ---- */
+  --z-board: 1;
+  --z-hud: 10;
+  --z-panel: 20;
+  --z-modal-backdrop: 100;
+  --z-modal: 110;
+  --z-tooltip: 200;
+  --z-notification: 300;
+}
+
+/* ---- Reset & Base ---- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-deepest);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.4);
+}
+
+/* ---- Selection ---- */
+::selection {
+  background: rgba(0, 229, 255, 0.3);
+  color: var(--text-primary);
+}
+
+/* ---- Utility Classes ---- */
+.neon-text {
+  color: var(--neon-cyan);
+  text-shadow: var(--glow-subtle) var(--neon-cyan);
+}
+
+.neon-text-pink {
+  color: var(--neon-pink);
+  text-shadow: var(--glow-subtle) var(--neon-pink);
+}
+
+.neon-text-green {
+  color: var(--neon-green);
+  text-shadow: var(--glow-subtle) var(--neon-green);
+}
+
+.neon-text-warning {
+  color: var(--neon-orange);
+  text-shadow: var(--glow-subtle) var(--neon-orange);
+}
+
+.glass-panel {
+  background: rgba(17, 17, 27, 0.85);
+  backdrop-filter: blur(12px);
+  border: var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Background Grid Pattern ---- */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ---- Scanline Overlay (optional) ---- */
+.scanline-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.015) 2px,
+    rgba(0, 0, 0, 0.015) 4px
+  );
+  z-index: 9999;
+}
