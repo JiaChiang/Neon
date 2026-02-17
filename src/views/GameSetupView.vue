@@ -217,15 +217,19 @@ function goBack() {
           <span class="row-label">{{ t('setup.selectColor') }}</span>
           <div class="color-options">
             <button
-              v-for="color in getAvailableColors(setup.color)"
-              :key="color"
-              class="color-btn"
-              :class="{ active: setup.color === color }"
-              :style="{
-                '--color': PLAYER_COLORS_CSS[color],
-                background: PLAYER_COLORS_CSS[color],
-              }"
-              @click="setup.color = color"
+                v-for="color in availableColors"
+                :key="color"
+                class="color-btn"
+                :class="{ 
+                  active: setup.color === color,
+                  disabled: !getAvailableColors(setup.color).includes(color)
+                }"
+                :style="{
+                  '--color': PLAYER_COLORS_CSS[color],
+                  background: PLAYER_COLORS_CSS[color], 
+                  }"
+                :disabled="!getAvailableColors(setup.color).includes(color)"
+                @click="setup.color = color"
             />
           </div>
         </div>
@@ -515,5 +519,44 @@ function goBack() {
     flex-direction: column;
     align-items: center;
   }
+}
+
+.color-btn {
+  position: relative; /* 必備，讓偽元素能定位在上方 */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  overflow: hidden; /* 確保斜槓不會超出圓圈 */
+  margin-right: 3px;
+}
+
+/* 當按鈕處於 disabled 狀態時 */
+.color-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.7; /* 稍微降點透明度，讓使用者知道不可選 */
+}
+
+.color-btn.disabled::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  /* 畫出禁止符號：外圈 + 中間斜線 */
+  background:
+      linear-gradient(
+          45deg,
+          transparent 45%,
+          rgba(255, 255, 255, 0.8) 45%,
+          rgba(255, 255, 255, 0.8) 55%,
+          transparent 55%
+      );
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-sizing: border-box;
 }
 </style>
