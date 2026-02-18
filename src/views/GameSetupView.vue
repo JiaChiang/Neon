@@ -409,27 +409,7 @@ function goBack() {
   gap: 6px;
 }
 
-.color-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  opacity: 0.6;
-}
 
-.color-btn:hover {
-  opacity: 1;
-  transform: scale(1.15);
-}
-
-.color-btn.active {
-  opacity: 1;
-  border-color: white;
-  transform: scale(1.2);
-  box-shadow: 0 0 8px var(--color);
-}
 
 /* ---- Character Row ---- */
 .character-options {
@@ -522,14 +502,28 @@ function goBack() {
 }
 
 .color-btn {
-  position: relative; /* 必備，讓偽元素能定位在上方 */
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: none;
+  border: 2px solid transparent;
   cursor: pointer;
+  transition: all var(--transition-fast);
+  opacity: 0.6;
+  position: relative; /* 必備，讓偽元素能定位在上方 */
   overflow: hidden; /* 確保斜槓不會超出圓圈 */
   margin-right: 3px;
+}
+
+.color-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.color-btn.active {
+  opacity: 1;
+  border-color: white;
+  transform: scale(1.2);
+  box-shadow: 0 0 8px var(--color);
 }
 
 /* 當按鈕處於 disabled 狀態時 */
