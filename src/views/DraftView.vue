@@ -7,6 +7,7 @@ import { PLAYER_COLORS_CSS, DRAFT_SLOTS_PER_TURN } from '../constants/gameConfig
 import { useGameStore } from '../stores/gameStore'
 import { useBoardStore } from '../stores/boardStore'
 import { shuffle } from '../utils/shuffle'
+import { useWebSocket } from '../network/useWebSocket'
 import NeonButton from '../components/common/NeonButton.vue'
 import GameBoard from '../components/board/GameBoard.vue'
 
@@ -14,6 +15,22 @@ const router = useRouter()
 const { t } = useI18n()
 const gameStore = useGameStore()
 const boardStore = useBoardStore()
+const ws = useWebSocket()
+
+const isMyDraftTurn = computed(() => {
+  if (!ws.isMultiplayer.value) return true
+  const myRoom = ws.myRoomPlayer.value
+  if (!myRoom) return true
+  const draftPlayer = gameStore.players[boardStore.draftState.currentPlayerIndex]
+  if (!draftPlayer) return true
+  return draftPlayer.color === myRoom.color
+})
+
+function broadcastIfHost() {
+  if (ws.isMultiplayer.value && ws.isHost.value) {
+    ws.broadcastGameState()
+  }
+}
 
 // ---- Computed ----
 const currentDraftPlayerIndex = computed(() => boardStore.draftState.currentPlayerIndex)
@@ -31,6 +48,7 @@ const currentRound = computed(() => boardStore.draftState.currentRound)
 function handleCellClick(row: number, col: number) {
   if (isDraftComplete.value) return
   if (!currentPlayer.value) return
+  if (!isMyDraftTurn.value) return
 
   const cell = boardStore.getCell(row, col)
   if (!cell || cell.slotOwner) return
@@ -53,6 +71,8 @@ function handleCellClick(row: number, col: number) {
     boardStore.draftState.isComplete = true
     finalizeDraft()
   }
+
+  broadcastIfHost()
 }
 
 function finalizeDraft() {
@@ -62,6 +82,7 @@ function finalizeDraft() {
 
 function startPlaying() {
   gameStore.setPhase(GamePhase.PLAYING)
+  broadcastIfHost()
   router.push('/play')
 }
 
@@ -137,6 +158,7 @@ function autoRandomDraft() {
   // Mark draft complete and assign mines
   boardStore.draftState.isComplete = true
   finalizeDraft()
+  broadcastIfHost()
 }
 </script>
 

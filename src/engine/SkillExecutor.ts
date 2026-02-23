@@ -28,6 +28,12 @@ export interface SkillResult {
   virusRemovalCostReduction?: number
   /** For awakened Recycler: money bonus when removing a virus */
   virusRemovalBonus?: number
+  /** For Hacker: revealed mine card positions */
+  revealedMines?: { row: number; col: number; mineType: string }[]
+  /** For Hacker awakened: passive flag for virus placement bonus */
+  virusPlacementBonus?: number
+  /** For Bio-Engineer awakened: passive flag for chip draw on slot completion */
+  completionDrawBonus?: number
 }
 
 // ---- Context callbacks provided by the composable/view layer ----
@@ -42,6 +48,8 @@ export interface SkillContext {
   getFaceUpChips: () => (Chip | null)[]
   takeFreeMarketChip: (index: number) => Chip | null
   setMarketDiscount: (amount: number) => void
+  /** Get unrevealed mine card positions on the board (for Hacker) */
+  getUnrevealedMines?: () => { row: number; col: number; mineType: string }[]
 }
 
 // ---- Skill availability check ----
@@ -61,6 +69,22 @@ export function canUseSkill(
     return {
       canUse: false,
       reason: 'Data Collector skills are passive and activate automatically.',
+    }
+  }
+
+  // Hacker awakened is passive (triggers on virus placement)
+  if (player.character.id === CharacterId.HACKER && player.isAwakened) {
+    return {
+      canUse: false,
+      reason: 'Neural Hijack is passive and activates when placing virus chips.',
+    }
+  }
+
+  // Bio-Engineer awakened is passive (triggers on slot completion)
+  if (player.character.id === CharacterId.BIO_ENGINEER && player.isAwakened) {
+    return {
+      canUse: false,
+      reason: 'Bio-Feedback is passive and activates when completing slots.',
     }
   }
 
@@ -131,6 +155,28 @@ export function executeSkill(
         return executeFinancialTycoonBasic(context)
       } else {
         return executeFinancialTycoonAwakened(context)
+      }
+
+    // ================================================================
+    // HACKER
+    // ================================================================
+    case CharacterId.HACKER:
+      if (!isAwakened) {
+        return executeHackerBasic(context)
+      } else {
+        // Awakened: Passive modifier for virus placement
+        return executeHackerAwakened()
+      }
+
+    // ================================================================
+    // BIO-ENGINEER
+    // ================================================================
+    case CharacterId.BIO_ENGINEER:
+      if (!isAwakened) {
+        return executeBioEngineerBasic(context)
+      } else {
+        // Awakened: Passive modifier for slot completion
+        return executeBioEngineerAwakened()
       }
 
     default:
@@ -246,5 +292,108 @@ function executeFinancialTycoonAwakened(context: SkillContext): SkillResult {
     descriptionKey: 'skill.financialTycoon.awakened.select',
     requiresInteraction: true,
     interactionType: SubActionState.SELECT_MARKET_SLOT,
+  }
+}
+
+// ---- Hacker Skills ----
+
+/**
+ * Hacker Basic Skill: Peek at up to 3 unrevealed mine cards on the board.
+ * This reveals the mine types to the current player only (information advantage).
+ * Non-interactive — the result contains the revealed mine positions.
+ */
+function executeHackerBasic(context: SkillContext): SkillResult {
+  if (!context.getUnrevealedMines) {
+    return {
+      success: false,
+      description: 'Cannot peek at mines — feature not available.',
+      descriptionKey: 'skill.hacker.basic.unavailable',
+    }
+  }
+
+  const unrevealed = context.getUnrevealedMines()
+  if (unrevealed.length === 0) {
+    return {
+      success: true,
+      description: 'System Intrusion: No unrevealed mines remaining on the board.',
+      descriptionKey: 'skill.hacker.basic.empty',
+    }
+  }
+
+  // Randomly select up to 3 mines to reveal
+  const shuffled = [...unrevealed].sort(() => Math.random() - 0.5)
+  const revealed = shuffled.slice(0, 3)
+
+  return {
+    success: true,
+    description: `System Intrusion: Peeked at ${revealed.length} mine card(s)!`,
+    descriptionKey: 'skill.hacker.basic.peeked',
+    revealedMines: revealed,
+  }
+}
+
+/**
+ * Hacker Awakened Skill: Passive modifier.
+ * When placing a virus chip on an opponent's slot, steal $3 from that opponent.
+ * This is a passive modifier checked during chip placement.
+ */
+function executeHackerAwakened(): SkillResult {
+  return {
+    success: true,
+    description: 'Neural Hijack active: When placing virus on opponent, steal $3 from them.',
+    descriptionKey: 'skill.hacker.awakened.active',
+    virusPlacementBonus: 3,
+  }
+}
+
+// ---- Bio-Engineer Skills ----
+
+/**
+ * Bio-Engineer Basic Skill: Draw 2 chips from the bag.
+ * Player picks 1 to keep, returns 1 to the bag.
+ * Similar to Recycler but draws fewer chips (2 instead of 3).
+ */
+function executeBioEngineerBasic(context: SkillContext): SkillResult {
+  const drawn = context.drawChips(2)
+
+  if (drawn.length === 0) {
+    return {
+      success: false,
+      description: 'No chips left in the bag to draw.',
+      descriptionKey: 'skill.bioEngineer.basic.empty',
+    }
+  }
+
+  // If only 1 chip drawn, auto-keep it
+  if (drawn.length === 1) {
+    return {
+      success: true,
+      description: 'Gene Synthesis: Only 1 chip available — added to hand.',
+      descriptionKey: 'skill.bioEngineer.basic.single',
+      chipsDrawn: drawn,
+    }
+  }
+
+  return {
+    success: true,
+    description: 'Gene Synthesis: Draw 2 chips. Select 1 to keep, return the other.',
+    descriptionKey: 'skill.bioEngineer.basic.drawn',
+    requiresInteraction: true,
+    interactionType: SubActionState.SELECT_KEEP,
+    chipsDrawn: drawn,
+  }
+}
+
+/**
+ * Bio-Engineer Awakened Skill: Passive modifier.
+ * When completing a slot (own slot + data chip), immediately draw 1 bonus chip
+ * from the bag to hand. Checked during chip placement.
+ */
+function executeBioEngineerAwakened(): SkillResult {
+  return {
+    success: true,
+    description: 'Bio-Feedback active: Draw 1 bonus chip when completing a slot.',
+    descriptionKey: 'skill.bioEngineer.awakened.active',
+    completionDrawBonus: 1,
   }
 }

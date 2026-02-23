@@ -10,6 +10,10 @@ const { t } = useI18n()
 function startNewGame() {
   router.push('/setup')
 }
+
+function goOnline() {
+  router.push('/lobby')
+}
 </script>
 
 <template>
@@ -51,6 +55,9 @@ function startNewGame() {
       <div class="menu-actions">
         <NeonButton size="lg" @click="startNewGame">
           {{ t('menu.newGame') }}
+        </NeonButton>
+        <NeonButton size="lg" variant="secondary" @click="goOnline">
+          🌐 {{ t('menu.online') }}
         </NeonButton>
       </div>
     </div>

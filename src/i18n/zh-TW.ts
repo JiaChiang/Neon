@@ -10,6 +10,7 @@ export default {
     newGame: '開始新遊戲',
     rules: '遊戲規則',
     language: '語言',
+    online: '線上多人',
   },
   // ---- Setup ----
   setup: {
@@ -138,6 +139,22 @@ export default {
       awakenSkill: '市場操控',
       awakenDesc: '重新整理市場（明牌區晶片全部棄掉，補充新的），並免費拿取 1 片',
     },
+    hacker: {
+      name: '駭客',
+      title: '數位幽靈',
+      basicSkill: '系統入侵',
+      basicDesc: '偷看版圖上最多 3 張未翻開的地雷卡',
+      awakenSkill: '神經劫持',
+      awakenDesc: '被動：在對手卡槽放置病毒晶片時，從該對手偷取 $3',
+    },
+    bioEngineer: {
+      name: '生態工程師',
+      title: '基因編碼大師',
+      basicSkill: '基因合成',
+      basicDesc: '從晶片袋抽 2 片晶片，選 1 片加入手牌，其餘放回袋中',
+      awakenSkill: '生物回饋',
+      awakenDesc: '被動：每次完成卡槽時，額外從晶片袋抽 1 片晶片到手牌',
+    },
   },
   // ---- Skill Interaction ----
   skill: {
@@ -146,6 +163,10 @@ export default {
     selectSecondChip: '選擇第二片晶片進行交換',
     chipMoved: '晶片已移動！',
     chipSwapped: '晶片已交換！',
+    minesPeeked: '🔍 偷看了 {n} 張地雷卡！',
+    noMinesLeft: '版圖上沒有未翻開的地雷卡',
+    virusSteal: '💀 神經劫持！從對手偷取了 ${n}！',
+    completionDraw: '🧬 生物回饋！額外獲得 1 片晶片！',
   },
   // ---- Mine Cards ----
   mine: {
@@ -180,5 +201,35 @@ export default {
     totalMoney: '總金錢',
     playAgain: '再玩一局',
     backToMenu: '返回主選單',
+  },
+  // ---- Lobby ----
+  lobby: {
+    title: '線上多人',
+    enterName: '輸入暱稱',
+    createRoom: '建立房間',
+    joinRoom: '加入房間',
+    roomCode: '房間代碼',
+    enterCode: '輸入房間代碼',
+    waiting: '等待玩家加入...',
+    ready: '準備',
+    notReady: '取消準備',
+    startGame: '開始遊戲',
+    leave: '離開房間',
+    back: '返回',
+    connecting: '連線中...',
+    connectionFailed: '連線失敗',
+    roomNotFound: '找不到房間',
+    roomFull: '房間已滿',
+    selectColor: '選擇顏色',
+    selectCharacter: '選擇角色',
+    host: '房主',
+    players: '玩家',
+    needMorePlayers: '需要至少 2 位玩家',
+    notAllReady: '尚有玩家未準備',
+    waitingForHost: '等待房主開始遊戲...',
+    waitingForTurn: '等待 {name} 的行動...',
+    hostLeft: '房主離開，房間已關閉',
+    playerDisconnected: '{name} 斷線了',
+    you: '（你）',
   },
 }

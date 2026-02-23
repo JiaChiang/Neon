@@ -10,6 +10,7 @@ export default {
     newGame: 'New Game',
     rules: 'Rules',
     language: 'Language',
+    online: 'Online Multiplayer',
   },
   // ---- Setup ----
   setup: {
@@ -138,6 +139,22 @@ export default {
       awakenSkill: 'Market Manipulation',
       awakenDesc: 'Refresh market (discard all face-up chips, draw new ones) and take 1 for free',
     },
+    hacker: {
+      name: 'Hacker',
+      title: 'Digital Ghost',
+      basicSkill: 'System Intrusion',
+      basicDesc: 'Peek at up to 3 unrevealed mine cards on the board',
+      awakenSkill: 'Neural Hijack',
+      awakenDesc: 'Passive: When placing virus on opponent slot, steal $3 from them',
+    },
+    bioEngineer: {
+      name: 'Bio-Engineer',
+      title: 'Gene Coding Master',
+      basicSkill: 'Gene Synthesis',
+      basicDesc: 'Draw 2 chips from bag, keep 1, return the rest',
+      awakenSkill: 'Bio-Feedback',
+      awakenDesc: 'Passive: Draw 1 bonus chip when completing a slot',
+    },
   },
   // ---- Skill Interaction ----
   skill: {
@@ -146,6 +163,10 @@ export default {
     selectSecondChip: 'Select the second chip to swap',
     chipMoved: 'Chip moved!',
     chipSwapped: 'Chips swapped!',
+    minesPeeked: '🔍 Peeked at {n} mine card(s)!',
+    noMinesLeft: 'No unrevealed mine cards on the board',
+    virusSteal: '💀 Neural Hijack! Stole ${n} from opponent!',
+    completionDraw: '🧬 Bio-Feedback! Drew 1 bonus chip!',
   },
   // ---- Mine Cards ----
   mine: {
@@ -180,5 +201,35 @@ export default {
     totalMoney: 'Total Money',
     playAgain: 'Play Again',
     backToMenu: 'Back to Menu',
+  },
+  // ---- Lobby ----
+  lobby: {
+    title: 'Online Multiplayer',
+    enterName: 'Enter Nickname',
+    createRoom: 'Create Room',
+    joinRoom: 'Join Room',
+    roomCode: 'Room Code',
+    enterCode: 'Enter Room Code',
+    waiting: 'Waiting for players...',
+    ready: 'Ready',
+    notReady: 'Cancel Ready',
+    startGame: 'Start Game',
+    leave: 'Leave Room',
+    back: 'Back',
+    connecting: 'Connecting...',
+    connectionFailed: 'Connection Failed',
+    roomNotFound: 'Room Not Found',
+    roomFull: 'Room Full',
+    selectColor: 'Select Color',
+    selectCharacter: 'Select Character',
+    host: 'Host',
+    players: 'Players',
+    needMorePlayers: 'Need at least 2 players',
+    notAllReady: 'Not all players are ready',
+    waitingForHost: 'Waiting for host to start...',
+    waitingForTurn: "Waiting for {name}'s turn...",
+    hostLeft: 'Host left, room closed',
+    playerDisconnected: '{name} disconnected',
+    you: '(You)',
   },
 }

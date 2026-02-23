@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useWebSocket } from '../network/useWebSocket'
 import {
   GamePhase, TurnPhase, ActionType, SubActionState,
   ChipType, StatusEffect, MineCardType, MineEffectTiming, CharacterId,
@@ -39,6 +40,24 @@ const boardStore = useBoardStore()
 const marketStore = useMarketStore()
 const turnStore = useTurnStore()
 const uiStore = useUIStore()
+const ws = useWebSocket()
+
+// ---- Multiplayer helpers ----
+const isMyTurn = computed(() => {
+  if (!ws.isMultiplayer.value) return true
+  if (!ws.playerId.value || !currentPlayer.value) return true
+  // In multiplayer, match the websocket playerId to room player,
+  // then match room player's color to game player
+  const myRoom = ws.myRoomPlayer.value
+  if (!myRoom) return true
+  return currentPlayer.value.color === myRoom.color
+})
+
+function broadcastIfHost() {
+  if (ws.isMultiplayer.value && ws.isHost.value) {
+    ws.broadcastGameState()
+  }
+}
 
 // ---- Local UI state ----
 const showMineModal = ref(false)
@@ -51,6 +70,8 @@ const showRecycleSelect = ref(false)
 const skillInteractionActive = ref(false)
 const skillBoardSelectedCell = ref<CellCoord | null>(null)
 const mobileTab = ref<'board' | 'players' | 'market'>('board')
+const showMinePeekModal = ref(false)
+const peekedMines = ref<{ row: number; col: number; mineType: string }[]>([])
 
 // ---- Computed ----
 const currentPlayer = computed(() => gameStore.players[gameStore.currentPlayerIndex])
@@ -136,6 +157,17 @@ function createSkillContext(): SkillContext {
     getFaceUpChips: () => [...marketStore.faceUpSlots],
     takeFreeMarketChip: (index: number) => marketStore.purchaseFaceUp(index),
     setMarketDiscount: (amount: number) => turnStore.setMarketDiscount(amount),
+    getUnrevealedMines: () => {
+      const mines: { row: number; col: number; mineType: string }[] = []
+      for (const row of boardStore.cells) {
+        for (const cell of row) {
+          if (cell.mineCard && !cell.mineRevealed) {
+            mines.push({ row: cell.row, col: cell.col, mineType: cell.mineCard.type })
+          }
+        }
+      }
+      return mines
+    },
   }
 }
 
@@ -154,8 +186,10 @@ function startNewTurn() {
       (e) => e !== StatusEffect.SKILL_BLOCKED
     )
   }
-  // Show pass device screen (except first turn)
-  if (gameStore.roundNumber > 1 || gameStore.currentPlayerIndex > 0) {
+  // Show pass device screen (except first turn) — skip in multiplayer
+  if (ws.isMultiplayer.value) {
+    turnStore.enterSkillPhase()
+  } else if (gameStore.roundNumber > 1 || gameStore.currentPlayerIndex > 0) {
     showPassDevice.value = true
   } else {
     turnStore.enterSkillPhase()
@@ -188,7 +222,7 @@ function handleUseSkill() {
 
   if (result.requiresInteraction) {
     if (result.chipsDrawn) {
-      // Recycler: show draw selection
+      // Recycler / Bio-Engineer: show draw selection
       recycleDrawnChips.value = result.chipsDrawn
       showRecycleSelect.value = true
     } else if (result.interactionType) {
@@ -203,6 +237,11 @@ function handleUseSkill() {
       }
     }
   } else {
+    // Hacker: show peeked mine cards
+    if (result.revealedMines && result.revealedMines.length > 0) {
+      peekedMines.value = result.revealedMines
+      showMinePeekModal.value = true
+    }
     actionMessage.value = result.description
     turnStore.enterMainAction()
   }
@@ -408,6 +447,15 @@ function handleBoardCellClick(row: number, col: number) {
       }
     }
 
+    // Bio-Engineer Awakened passive: draw 1 bonus chip on slot completion
+    if (player.character.id === CharacterId.BIO_ENGINEER && player.isAwakened) {
+      const bonusChips = gameStore.drawChips(1)
+      if (bonusChips.length > 0) {
+        player.hand.push(...bonusChips)
+        actionMessage.value = t('skill.completionDraw')
+      }
+    }
+
     // Check awakening
     if (gameStore.checkAwakening(player.id)) {
       actionMessage.value = `⚡ ${t('awakening.title')} - ${t(player.character.awakenSkillKey)}`
@@ -431,6 +479,19 @@ function handleBoardCellClick(row: number, col: number) {
   // Virus placement on opponent's slot
   if (cell && cell.slotOwner !== player.id && chip.type === ChipType.VIRUS) {
     player.virusChipsPlaced++
+
+    // Hacker Awakened passive: steal $3 from the slot owner
+    if (player.character.id === CharacterId.HACKER && player.isAwakened && cell.slotOwner) {
+      const victim = gameStore.getPlayerById(cell.slotOwner)
+      if (victim) {
+        const stealAmount = Math.min(3, victim.money)
+        if (stealAmount > 0) {
+          gameStore.removeMoney(victim.id, stealAmount)
+          gameStore.addMoney(player.id, stealAmount)
+          actionMessage.value = `💀 ${t('skill.virusSteal', { n: stealAmount })}`
+        }
+      }
+    }
   }
 
   // Trigger mine card
@@ -577,6 +638,7 @@ function finishMainAction() {
   }
 
   turnStore.enterEndResolution()
+  broadcastIfHost()
 }
 
 function handleEndTurn() {
@@ -622,6 +684,7 @@ function handleEndTurn() {
     gameStore.mirrorPathActive = false
   }
 
+  broadcastIfHost()
   startNewTurn()
 }
 
@@ -637,6 +700,27 @@ function handleMineModalClose() {
 function handleRemoveVirus() {
   // TODO: Implement virus removal flow
   actionMessage.value = 'Select a virus chip on the board to remove'
+}
+
+// ---- Hacker mine peek display helper ----
+const MINE_NAME_MAP: Record<string, string> = {
+  BLANK: 'mine.blank.name',
+  CORE_OVERCLOCK: 'mine.coreOverclock.name',
+  FIREWALL_PATCH: 'mine.firewallPatch.name',
+  DATA_MINING: 'mine.dataMining.name',
+  UNIVERSAL_PORT: 'mine.universalPort.name',
+  CHAIN_SHORT_CIRCUIT: 'mine.chainShortCircuit.name',
+  ASSET_FREEZE: 'mine.assetFreeze.name',
+  CODE_SHIFT: 'mine.codeShift.name',
+  TROJAN_HORSE: 'mine.trojanHorse.name',
+  MIRROR_PATH: 'mine.mirrorPath.name',
+  RESTART_COMMAND: 'mine.restartCommand.name',
+  EMERGENCY_BACKUP: 'mine.emergencyBackup.name',
+}
+
+function getMineDisplayName(mineType: string): string {
+  const key = MINE_NAME_MAP[mineType]
+  return key ? t(key) : mineType
 }
 </script>
 
@@ -816,13 +900,49 @@ function handleRemoveVirus() {
       @close="handleMineModalClose"
     />
 
+    <!-- Hacker Mine Peek Modal -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showMinePeekModal" class="modal-overlay" @click="showMinePeekModal = false">
+          <div class="mine-peek-modal" @click.stop>
+            <h3 class="modal-title">🔍 {{ t('character.hacker.basicSkill') }}</h3>
+            <div class="peek-mines-list">
+              <div
+                v-for="(mine, i) in peekedMines"
+                :key="i"
+                class="peek-mine-item"
+              >
+                <span class="peek-mine-pos">[{{ mine.row + 1 }},{{ mine.col + 1 }}]</span>
+                <span class="peek-mine-type">{{ getMineDisplayName(mine.mineType) }}</span>
+              </div>
+            </div>
+            <NeonButton size="sm" @click="showMinePeekModal = false">OK</NeonButton>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Pass Device Modal -->
     <PassDeviceModal
-      v-if="currentPlayer"
+      v-if="currentPlayer && !ws.isMultiplayer.value"
       :next-player="currentPlayer"
       :visible="showPassDevice"
       @continue="handlePassDeviceContinue"
     />
+
+    <!-- Multiplayer: Waiting for other player's turn -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="ws.isMultiplayer.value && !isMyTurn" class="waiting-overlay">
+          <div class="waiting-popup">
+            <div class="waiting-spinner"></div>
+            <div class="waiting-text">
+              {{ t('lobby.waitingForTurn', { name: currentPlayer?.name || '...' }) }}
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -1088,6 +1208,93 @@ function handleRemoveVirus() {
   opacity: 0;
 }
 
+/* ---- Mine Peek Modal (Hacker) ---- */
+.mine-peek-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 64, 129, 0.3);
+  border-radius: var(--border-radius-xl);
+  animation: scale-pop 0.3s ease;
+  min-width: 260px;
+}
+
+.peek-mines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.peek-mine-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 8px 12px;
+  background: rgba(255, 64, 129, 0.06);
+  border: 1px solid rgba(255, 64, 129, 0.15);
+  border-radius: var(--border-radius-md);
+}
+
+.peek-mine-pos {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-width: 48px;
+}
+
+.peek-mine-type {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: #ff4081;
+  font-weight: 600;
+}
+
+/* ---- Multiplayer Waiting Overlay ---- */
+.waiting-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-backdrop);
+  backdrop-filter: blur(2px);
+}
+
+.waiting-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl) calc(var(--space-xl) * 2);
+  background: var(--bg-surface);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: var(--border-radius-xl);
+}
+
+.waiting-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 229, 255, 0.2);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.waiting-text {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
 /* ============================================================
    MOBILE RESPONSIVE (max-width: 768px)
    ============================================================ */
@@ -1262,10 +1469,12 @@ function handleRemoveVirus() {
   }
 
   /* ---- Recycle Modal Mobile ---- */
-  .recycle-modal {
+  .recycle-modal,
+  .mine-peek-modal {
     padding: var(--space-md);
     margin: 0 16px;
     max-width: 90vw;
+    min-width: auto;
   }
 
   .modal-title {
